@@ -8,15 +8,40 @@
 <body>
 <div class="centered-form">
     <div class="centered-form__box">
-        <h1>Join</h1>
+        <h1>Create new channel</h1>
         <form action="/chat.html">
             <label>Display name</label>
             <input type="text" name="username" placeholder="Display name" required>
             <label>Room</label>
             <input type="text" name="room" placeholder="Room" required>
-            <button>Join</button>
+            <button>Create</button>
         </form>
     </div>
+    <div id="rooms" class="centered-form__box"></div>
 </div>
+
+<script id="no-rooms-template" type="text/html">
+    <h2>No rooms to join</h2>
+</script>
+
+<script id="rooms-template" type="text/html">
+    <h1>Join existing channel</h1>
+    <form action="/chat.html">
+        <label>Display name</label>
+        <input type="text" name="username" placeholder="Display name" required>
+        <label>Available rooms: </label>
+        <ul class="rooms">
+            {{#rooms}}
+            <li>
+                <input type="submit" class="room" name="room" value="{{name}}">
+            </li>
+            {{/rooms}}
+        </ul>
+    </form>
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/script/index.js"></script>
 </body>
 </html>

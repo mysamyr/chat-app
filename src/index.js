@@ -10,6 +10,11 @@ const {
   getUser,
   getUsersInRoom
 } = require("./utils/users");
+const {
+  addToRoom,
+  removeFromRoom,
+  getRooms
+} = require("./utils/rooms");
 
 // socket.emit, io.emit, socket.broadcast.emit
 // io.to.emit, socket.broadcast.to.emit
@@ -30,6 +35,7 @@ io.on("connection", socket => {
     if (error) return callback(error);
 
     socket.join(user.room);
+    addToRoom(user.room);
 
     socket.emit("message", generateMessage("Admin", "Welcome!"));
     socket.broadcast.to(user.room).emit("message", generateMessage("Admin", `${user.username} has joined!`));
@@ -40,6 +46,10 @@ io.on("connection", socket => {
     });
 
     callback();
+  });
+
+  socket.on("currentRooms", (callback) => {
+    callback(getRooms());
   });
 
   socket.on('sendMessage', (message, callback) => {
@@ -73,6 +83,7 @@ io.on("connection", socket => {
         room: user.room,
         users: getUsersInRoom(user.room)
       });
+      removeFromRoom(user.room);
     }
   });
 });
