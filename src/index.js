@@ -30,6 +30,9 @@ app.use(express.static(publicDirectoryPath));
 
 io.on("connection", socket => {
   socket.on("join", ({ username, room }, callback) => {
+    if (username.length > 12) return callback("Username must be maximum 12 character long");
+    if (room.length > 20) return callback("Room name is too long. Maximum 20 characters");
+
     const {error, user} = addUser({id: socket.id, username, room});
 
     if (error) return callback(error);

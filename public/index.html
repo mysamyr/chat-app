@@ -11,9 +11,9 @@
         <h1>Create new channel</h1>
         <form action="/chat.html">
             <label>Display name</label>
-            <input type="text" name="username" placeholder="Display name" required>
+            <input type="text" name="username" placeholder="Display name" maxlength="12" required>
             <label>Room</label>
-            <input type="text" name="room" placeholder="Room" required>
+            <input type="text" name="room" placeholder="Room" maxlength="20" required>
             <button>Create</button>
         </form>
     </div>
@@ -28,7 +28,7 @@
     <h2>Join existing channel</h2>
     <form action="/chat.html">
         <label>Display name</label>
-        <input type="text" name="username" placeholder="Display name" required>
+        <input type="text" name="username" placeholder="Display name" maxlength="12" required>
         <label>Available rooms: </label>
         <ul class="rooms">
             {{#rooms}}
