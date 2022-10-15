@@ -120,7 +120,11 @@ button:disabled {
     color: white;
     background: #333744;
     width: 225px;
-    overflow-y: scroll
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.chat__sidebar::-webkit-scrollbar {
+    display: none;
 }
 
 /* Chat styles */
@@ -195,6 +199,7 @@ button:disabled {
     padding: 24px;
     color: #7C5CBF;
     text-align: center;
+    text-transform: capitalize;
 }
 
 .list-title {
@@ -213,4 +218,15 @@ button:disabled {
 #quit {
     margin: 60px 40px;
     border-radius: 20px;
+}
+
+#arr-down {
+    /*display: none;*/
+    color: #2c2f3a;
+    text-align: center;
+    font-size: 32px;
+    position: fixed;
+    bottom: 100px;
+    right: 50px;
+    cursor: pointer;
 }

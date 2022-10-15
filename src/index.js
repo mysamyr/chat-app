@@ -3,7 +3,7 @@ const http = require("http");
 const express = require("express");
 const {Server} = require("socket.io");
 const Filter = require('bad-words');
-const { generateMessage, generateLocationMessage } = require('./utils/messages');
+const {generateMessage, generateLocationMessage} = require('./utils/messages');
 const {
   addUser,
   removeUser,
@@ -15,6 +15,17 @@ const {
   removeFromRoom,
   getRooms
 } = require("./utils/rooms");
+const {
+  CONNECTION,
+  JOIN,
+  MESSAGE,
+  ROOM_DATA,
+  CURRENT_ROOMS,
+  SEND_MESSAGE,
+  SEND_LOCATION,
+  LOCATION_MESSAGE,
+  DISCONNECT
+} = require("./constants/events");
 
 // socket.emit, io.emit, socket.broadcast.emit
 // io.to.emit, socket.broadcast.to.emit
@@ -28,11 +39,8 @@ const publicDirectoryPath = path.join(__dirname, "../public");
 
 app.use(express.static(publicDirectoryPath));
 
-io.on("connection", socket => {
-  socket.on("join", ({ username, room }, callback) => {
-    if (username.length > 12) return callback("Username must be maximum 12 character long");
-    if (room.length > 20) return callback("Room name is too long. Maximum 20 characters");
-
+io.on(CONNECTION, socket => {
+  socket.on(JOIN, ({username, room}, callback) => {
     const {error, user} = addUser({id: socket.id, username, room});
 
     if (error) return callback(error);
@@ -40,10 +48,10 @@ io.on("connection", socket => {
     socket.join(user.room);
     addToRoom(user.room);
 
-    socket.emit("message", generateMessage("Admin", "Welcome!"));
-    socket.broadcast.to(user.room).emit("message", generateMessage("Admin", `${user.username} has joined!`));
+    socket.emit(MESSAGE, generateMessage("Admin", "Welcome!"));
+    socket.broadcast.to(user.room).emit(MESSAGE, generateMessage("Admin", `${user.username} has joined!`));
 
-    io.to(user.room).emit("roomData", {
+    io.to(user.room).emit(ROOM_DATA, {
       room: user.room,
       users: getUsersInRoom(user.room)
     });
@@ -51,38 +59,43 @@ io.on("connection", socket => {
     callback();
   });
 
-  socket.on("currentRooms", (callback) => {
+  socket.on(CURRENT_ROOMS, (callback) => {
     callback(getRooms());
   });
 
-  socket.on('sendMessage', (message, callback) => {
+  socket.on(SEND_MESSAGE, (message, callback) => {
     const user = getUser(socket.id);
+
+    if (!user) {
+      return callback("User not found");
+    }
+
     const filter = new Filter();
 
     if (filter.isProfane(message)) {
       return callback('Profanity is not allowed!');
     }
 
-    io.to(user.room).emit('message', generateMessage(user.username, message));
+    io.to(user.room).emit(MESSAGE, generateMessage(user.username, message));
     callback();
   });
 
-  socket.on('sendLocation', (coords, callback) => {
+  socket.on(SEND_LOCATION, (coords, callback) => {
     const user = getUser(socket.id);
 
-    io.to(user.room).emit('locationMessage', generateLocationMessage(
+    io.to(user.room).emit(LOCATION_MESSAGE, generateLocationMessage(
       user.username,
       `https://google.com/maps?q=${coords.latitude},${coords.longitude}`));
 
     callback();
   });
 
-  socket.on('disconnect', () => {
+  socket.on(DISCONNECT, () => {
     const user = removeUser(socket.id);
 
     if (user) {
-      io.to(user.room).emit('message', generateMessage("Admin", `${user.username} has left!`));
-      io.to(user.room).emit("roomData", {
+      io.to(user.room).emit(MESSAGE, generateMessage("Admin", `${user.username} has left!`));
+      io.to(user.room).emit(ROOM_DATA, {
         room: user.room,
         users: getUsersInRoom(user.room)
       });

@@ -29,11 +29,23 @@ const autoscroll = () => {
   const scrollOffset = $messages.scrollTop + visibleHeight;
 
   if (containerHeight - newMessageHeight <= scrollOffset) {
-    $messages.scrollTop = $messages.scrollHeight;
+    $messages.scrollTop = containerHeight;
   }
+};
+const scrollToEnd = () => {
+  $messages.scrollTop = $messages.scrollHeight
+};
+const isURL = (msg) => {
+  const url = /^(https?:\/\/(www.)?|www.)[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
+    if (url.test(msg)) {
+      return `<a href="${msg}" target="_blank">${msg}</a>`;
+    }
+    return `<p>${msg}</p>`;
 };
 
 socket.on("message", message => {
+  message.text = isURL(message.text);
+
   const html = Mustache.render(messageTemplate, {
     username: message.username,
     message: message.text,
@@ -70,7 +82,7 @@ $messageForm.addEventListener("submit", e => {
     $messageFormButton.removeAttribute("disabled");
     $messageFormInput.value = "";
     $messageFormInput.focus();
-
+    scrollToEnd();
     if (err) return console.log(err);
   });
 });
@@ -95,5 +107,14 @@ socket.emit('join', {username, room}, (error) => {
   if (error) {
     alert(error);
     location.href = "/";
+  }
+});
+
+window.addEventListener("scroll", () => {
+  if (document.documentElement.scrollTop > 1) {
+    document.body.prepend(btn);
+    btn.classList.add("show");
+  } else {
+    btn.classList.remove("show");
   }
 });
