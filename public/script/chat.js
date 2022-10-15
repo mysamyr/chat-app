@@ -32,8 +32,17 @@ const autoscroll = () => {
     $messages.scrollTop = $messages.scrollHeight;
   }
 };
+const isURL = (msg) => {
+  const url = /^(https?:\/\/(www.)?|www.)[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
+    if (url.test(msg)) {
+      return `<a href="${msg}" target="_blank">${msg}</a>`;
+    }
+    return `<p>${msg}</p>`;
+};
 
 socket.on("message", message => {
+  message.text = isURL(message.text);
+
   const html = Mustache.render(messageTemplate, {
     username: message.username,
     message: message.text,
